@@ -1,7 +1,8 @@
 const stockSymbolForm = document.querySelector("#stock-symbol-form")
 
-let stockSymbol
+let myChart
 
+// Getting data from api and need the specific data points to be in arrays
 const separateKeyAndValue = (obj) => {
   const result = {
     keys: [],
@@ -18,10 +19,46 @@ const separateKeyAndValue = (obj) => {
   return result
 }
 
+// Handles displaying the chart
+const displayChart = (stockData, stockSymbol) => {
+  if (myChart) myChart.destroy()
+  const ctx = document.querySelector('#myChart')
+
+  let stockOpen = []
+  let stockKeys = []
+
+  for (let i = 0; i < stockData.values.length; i++) {
+    if (i % 5 === 0) {
+      stockOpen.push(stockData.values[i]["1. open"])
+      stockKeys.push(stockData.keys[i])
+    }
+  }
+
+  console.log("keys", stockKeys)
+  console.log("values", stockOpen)
+
+  myChart = new Chart(ctx, {
+    // tells what type of chart
+    type: 'line',
+    // data going into the chart
+    data: {
+      labels: stockKeys.reverse(),
+      datasets: [
+        {
+          // represents this dataset
+          label: stockSymbol.toUpperCase(),
+          data: stockOpen.reverse()
+        }
+      ]
+    } 
+  })
+
+}
+
+// This controls what happens when the submit button is clicked
 const submitStockFormHandler = e => {
   e.preventDefault()
-  const stockSymbolInput = document.querySelector("input[name='stock-symbol-input']").value
-  stockSymbol = stockSymbolInput
+  let stockSymbol = document.querySelector("input[name='stock-symbol-input']").value
 
   // This API returns intraday time series (timestamp, open, high, low, close, volume) of the equity specified.
   const url = `https://alpha-vantage.p.rapidapi.com/query?interval=5min&function=TIME_SERIES_INTRADAY&symbol=${stockSymbol}&datatype=json&output_size=compact`
@@ -35,57 +72,11 @@ const submitStockFormHandler = e => {
 
   let stockData
 
-  const getFinData = (url, options) => {
-    fetch(url, options)
+  fetch(url, options)
     .then(response => response.json())
-    .then(response => {
-      stockData = separateKeyAndValue(response["Time Series (5min)"])
-      return stockData
-    })
-    .then(stockData => {
-      const ctx = document.querySelector('#myChart')
-
-      let stockOpen = []
-
-      for (let i = 0; i < stockData.values.length; i++) {
-        stockOpen.push(stockData.values[i]["1. open"])
-      }
-
-      console.log("keys", stockData.keys)
-
-      const myChart = new Chart(ctx, {
-        // tells what type of chart
-        type: 'line',
-        // data going into the chart
-        data: {
-          labels: stockData.keys.reverse(),
-          datasets: [
-            {
-              // represents this dataset
-              label: stockSymbol,
-              data: stockOpen
-            }
-          ]
-        }
-      })
-
-      console.log("values", stockOpen)
-      
-      const data = {
-        labels: stockOpen,
-        datasets: [{
-          label: 'My First Dataset',
-          data: stockOpen.reverse(),
-          fill: false,
-          borderColor: 'rgb(75, 192, 192)',
-          tension: 0.1
-        }]
-      };      
-    })
+    .then(response => separateKeyAndValue(response["Time Series (5min)"]))
+    .then(stockData => displayChart(stockData, stockSymbol))
     .catch(err => console.error(err));
-  }
-
-  getFinData(url, options)
 }
 
 stockSymbolForm.addEventListener("submit", submitStockFormHandler)
