@@ -1,5 +1,7 @@
-const stockSymbolForm = document.querySelector("#stock-symbol-form")
+const stockSymbolForm = document.querySelector('#stock-symbol-form')
 const quoteContainer = document.querySelector('#quote-container')
+const stockQuoteHeading = document.querySelector('#stock-quote-heading')
+const stockQuoteDate = document.querySelector('#stock-quote-date')
 
 let myChart
 
@@ -72,7 +74,7 @@ const displayChart = (stockData, stockSymbol) => {
 // Generate quote html
 const generateQuoteHtml = (arr) => {
   quoteContainer.innerHTML = `
-  <ul class="quote-list">
+  <ul class="quote-list d-flex flex-wrap justify-content-between">
     <li class="quote-item">Price: ${arr[4]}</li>
     <li class="quote-item">Volume: ${arr[5]}</li>
     <li class="quote-item">Open: ${arr[1]}</li>
@@ -112,7 +114,12 @@ const submitStockFormHandler = e => {
   fetch(urlQuote, options)
     .then(response => response.json())
     .then(response => insertObjectsIntoArray(response["Global Quote"]))
-    .then(quoteArray => generateQuoteHtml(quoteArray)) 
+    .then(quoteArray => {
+      stockQuoteHeading.textContent = `Stock Quote: ${quoteArray[0]}`
+      stockDate = Date.parse(quoteArray[6]).toString("MMM dd, yyyy")
+      stockQuoteDate.textContent = stockDate
+      generateQuoteHtml(quoteArray)
+    }) 
 }
 
 stockSymbolForm.addEventListener("submit", submitStockFormHandler)
