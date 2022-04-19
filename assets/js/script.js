@@ -31,7 +31,7 @@ const displayChart = (stockData, stockSymbol) => {
     if (i % 5 === 0) {
       stockOpen.push(stockData.values[i]["1. open"])
       stockKeys.push(Date.parse(stockData.keys[i]).toString("h:mm tt"))
-      console.log(Date.parse(stockData.keys[i]).toString("ddd MMM d"))
+      // console.log(Date.parse(stockData.keys[i]).toString("ddd MMM d"))
     }
   }
 
@@ -62,7 +62,10 @@ const submitStockFormHandler = e => {
   let stockSymbol = document.querySelector("input[name='stock-symbol-input']").value
 
   // This API returns intraday time series (timestamp, open, high, low, close, volume) of the equity specified.
-  const url = `https://alpha-vantage.p.rapidapi.com/query?interval=5min&function=TIME_SERIES_INTRADAY&symbol=${stockSymbol}&datatype=json&output_size=compact`
+  const urlIntraday = `https://alpha-vantage.p.rapidapi.com/query?interval=5min&function=TIME_SERIES_INTRADAY&symbol=${stockSymbol}&datatype=json&output_size=compact`
+
+  // This API returns the price and volume info for a security.
+  const urlQuote = `https://alpha-vantage.p.rapidapi.com/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&datatype=json`
 
   const options = {
     headers: {
@@ -73,11 +76,15 @@ const submitStockFormHandler = e => {
 
   let stockData
 
-  fetch(url, options)
+  fetch(urlIntraday, options)
     .then(response => response.json())
     .then(response => separateKeyAndValue(response["Time Series (5min)"]))
     .then(stockData => displayChart(stockData, stockSymbol))
     .catch(err => console.error(err));
+
+  fetch(urlQuote, options)
+    .then(response => response.json())
+    .then(response => console.log(response)) 
 }
 
 stockSymbolForm.addEventListener("submit", submitStockFormHandler)
