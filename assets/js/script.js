@@ -1,4 +1,5 @@
 const stockSymbolForm = document.querySelector("#stock-symbol-form")
+const quoteContainer = document.querySelector('#quote-container')
 
 let myChart
 
@@ -14,6 +15,18 @@ const separateKeyAndValue = (obj) => {
 
     result.keys.push(key)
     result.values.push(value)
+  }
+
+  return result
+}
+
+const insertObjectsIntoArray = (obj) => {
+  const result = []
+
+  for (let key in obj) {
+    let value = obj[key]
+
+    result.push(value)
   }
 
   return result
@@ -56,6 +69,20 @@ const displayChart = (stockData, stockSymbol) => {
 
 }
 
+// Generate quote html
+const generateQuoteHtml = (arr) => {
+  quoteContainer.innerHTML = `
+  <ul class="quote-list">
+    <li class="quote-item">Price: ${arr[4]}</li>
+    <li class="quote-item">Volume: ${arr[5]}</li>
+    <li class="quote-item">Open: ${arr[1]}</li>
+    <li class="quote-item">High: ${arr[2]}</li>
+    <li class="quote-item">Low: ${arr[3]}</li>
+    <li class="quote-item">Previous close: ${arr[7]}</li>
+  </ul>
+  `
+}
+
 // This controls what happens when the submit button is clicked
 const submitStockFormHandler = e => {
   e.preventDefault()
@@ -84,7 +111,8 @@ const submitStockFormHandler = e => {
 
   fetch(urlQuote, options)
     .then(response => response.json())
-    .then(response => console.log(response)) 
+    .then(response => insertObjectsIntoArray(response["Global Quote"]))
+    .then(quoteArray => generateQuoteHtml(quoteArray)) 
 }
 
 stockSymbolForm.addEventListener("submit", submitStockFormHandler)
