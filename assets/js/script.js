@@ -30,7 +30,8 @@ const displayChart = (stockData, stockSymbol) => {
   for (let i = 0; i < stockData.values.length; i++) {
     if (i % 5 === 0) {
       stockOpen.push(stockData.values[i]["1. open"])
-      stockKeys.push(stockData.keys[i])
+      stockKeys.push(Date.parse(stockData.keys[i]).toString("h:mm tt"))
+      console.log(Date.parse(stockData.keys[i]).toString("ddd MMM d"))
     }
   }
 
